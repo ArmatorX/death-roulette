@@ -3,21 +3,21 @@ import {SlashCommandBuilder} from "@discordjs/builders";
 import {Client, CommandInteraction} from "discord.js";
 import {votes} from "../../index";
 
-export class CleanRouletteCommand implements Command {
+export class ClearMyOldVotesCommand implements Command {
     public data: Omit<SlashCommandBuilder, string>;
 
     constructor() {
         this.data = new SlashCommandBuilder()
-            .setName('limpiar-lista')
-            .setDescription('Reinicia la lista de películas.')
+            .setName('reiniciar-mis-votos')
+            .setDescription('Elimina los votos que no usaste todavía para que puedas votar nuevas pelis.')
     }
 
     public async execute(interaction: CommandInteraction, client: Client): Promise<void> {
-        votes.clear();
-        await interaction.reply({ content: 'La lista ha sido destruida.' });
+        votes.removeUnusedVotesFromUser(interaction.user.id);
+        interaction.reply('Se reiniciaron todos los votos que no usaste.')
     }
 }
 
-const command = new CleanRouletteCommand();
+const command = new ClearMyOldVotesCommand();
 
 export default command;

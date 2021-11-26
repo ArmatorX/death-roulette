@@ -1,18 +1,15 @@
 import {Command} from "./command.interface";
 import {SlashCommandBuilder, SlashCommandStringOption} from "@discordjs/builders";
-import {Client, CommandInteraction, User} from "discord.js";
-import votesJson from "../votes.json";
-import {Vote} from "./vote.interface";
-
-const USER_VOTES = 2;
+import {Client, CommandInteraction} from "discord.js";
+import {Vote} from "../classes/vote.class";
+import {NULL_VOTE} from "../global.constants";
+import {votes} from "../../index";
 
 export class VoteCommand implements Command {
     public data: Omit<SlashCommandBuilder, string>;
-    private votes = votesJson as Vote[];
-    private vote: Vote;
+    private vote: Vote = NULL_VOTE;
 
     constructor() {
-        this.vote = { id: 0, movieName: 'undefined', userId: 'undefined', hasBeenWatched: false };
         this.data = new SlashCommandBuilder()
             .setName('votar')
             .setDescription('Permite votar una película.')
@@ -25,17 +22,12 @@ export class VoteCommand implements Command {
     }
 
     public async execute(interaction: CommandInteraction, client: Client): Promise<void> {
-        if (this.userHasVotes(interaction.user)) {
-            this.vote = { id: 0, movieName: 'undefined', userId: 'undefined', hasBeenWatched: false };
-            this.vote.id = this.votes.length;
-            this.vote.userId = interaction.user.id;
-            const movieName = interaction.options.getString('pelicula') as string;
-            const movieId = parseInt(movieName);
+        if (votes.canUserVote(interaction.user.id)) {
+            this.vote = new Vote(votes.length, interaction.user.id, interaction.options.getString('pelicula') as string);
+            const voteId = parseInt(this.vote.movieName);
 
-            if (isNaN(movieId)) {
-                this.vote.movieName = movieName;
-            } else {
-                const vote = this.votes.find(v => v.id === movieId) as Vote;
+            if (!isNaN(voteId)) {
+                const vote = votes.findVoteById(voteId);
 
                 if (vote.hasBeenWatched) {
                     await interaction.reply({ content: 'Ya vimos esta peli.', ephemeral: true });
@@ -45,21 +37,13 @@ export class VoteCommand implements Command {
                 this.vote.movieName = vote.movieName;
             }
 
-            this.votes.push(this.vote);
-
-            await interaction.reply(`Has votado para ver \`${this.vote.movieName}\`\n\nTiene un total de \`${this.getNumberOfVotesFromMovie()}\` votos.`);
+            votes.add(this.vote);
+            console.log(this.vote);
+            await interaction.reply(`Has votado para ver \`${this.vote.movieName}\`\n\nTiene un total de \`${votes.getNumberOfVotesForMovie(this.vote.movieName)}\` votos.`);
         } else {
             await interaction.reply({ content: 'No te quedan votos.', ephemeral: true });
         }
 
-    }
-
-    private userHasVotes(user: User): boolean {
-        return this.votes.filter(v => v.userId === user.id).length < USER_VOTES;
-    }
-
-    private getNumberOfVotesFromMovie(): number {
-        return this.votes.filter(v => v.movieName === this.vote.movieName).length
     }
 }
 
