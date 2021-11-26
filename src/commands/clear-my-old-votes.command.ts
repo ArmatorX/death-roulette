@@ -14,7 +14,7 @@ export class ClearMyOldVotesCommand implements Command {
 
     public async execute(interaction: CommandInteraction, client: Client): Promise<void> {
         votes.removeUnusedVotesFromUser(interaction.user.id);
-        interaction.reply('Se reiniciaron todos los votos que no usaste.')
+        interaction.reply({ content: 'Se reiniciaron todos los votos que no usaste.', ephemeral: true });
     }
 }
 
