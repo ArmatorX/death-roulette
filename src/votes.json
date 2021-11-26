@@ -1,8 +1,20 @@
 [
   {
     "id": 0,
-    "userId": "1234",
+    "userId": "484111074682077197",
     "movieName": "Test",
     "hasBeenWatched": true
+  },
+  {
+    "id": 1,
+    "userId": "484111074682077197",
+    "movieName": "Test",
+    "hasBeenWatched": true
+  },
+  {
+    "id": 2,
+    "userId": "123",
+    "movieName": "Test 2",
+    "hasBeenWatched": false
   }
 ]
